@@ -29,7 +29,9 @@ const main = async () => {
     }),
   });
 
+  await apolloServer.start();
   apolloServer.applyMiddleware({ app });
+
   app.get('/', (_, res) => {
     res.send("Hello world!");
   });
@@ -39,6 +41,7 @@ const main = async () => {
   });
 }
 
+console.log("Test");
 main().catch(err => {
   console.error(err);
 });

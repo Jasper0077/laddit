@@ -20,7 +20,7 @@
     "apollo-server-express": "^3.6.3",
     "corepack": "^0.10.0",
     "express": "^4.17.3",
-    "graphql": "^16.3.0",
+    "graphql": "^15.3.0",
     "pg": "^8.7.3",
     "type-graphql": "^1.1.1"
   },

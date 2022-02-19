@@ -11,11 +11,11 @@ export default {
   },
   entities: [Post],
   type: 'postgresql',
-  dbName: process.env.DATABASE_NAME,
-  host: process.env.DATABASE_HOST,
+  dbName: process.env.MIKRO_ORM_DATABASE,
+  host: process.env.MIKRO_ORM_HOST,
   port: 5432,
-  user: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
+  user: process.env.MIKRO_ORM_USER,
+  password: process.env.MIKRO_ORM_PASSWORD,
   allowGlobalContext: true,
   debug: !__prod__
     
