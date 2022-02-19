@@ -11,11 +11,11 @@ export default {
   },
   entities: [Post],
   type: 'postgresql',
-  dbName: 'laddit',
-  host: 'localhost',
+  dbName: process.env.DATABASE_NAME,
+  host: process.env.DATABASE_HOST,
   port: 5432,
-  user: 'postgres',
-  password: '123456',
+  user: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
   allowGlobalContext: true,
   debug: !__prod__
     
