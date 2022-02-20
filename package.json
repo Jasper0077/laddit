@@ -22,6 +22,7 @@
     "express": "^4.17.3",
     "graphql": "^15.3.0",
     "pg": "^8.7.3",
+    "reflect-metadata": "^0.1.13",
     "type-graphql": "^1.1.1"
   },
   "mikro-orm": {
