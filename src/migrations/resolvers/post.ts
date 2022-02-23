@@ -1,6 +1,7 @@
 import { Post } from "../../entities/Post";
 import { Resolver, Query, ObjectType, Ctx, Arg, Int, Mutation } from "type-graphql";
 import { MyContext } from "src/types";
+import 'reflect-metadata';
 
 @ObjectType()
 @Resolver()
@@ -24,8 +25,8 @@ export class PostResolver {
     @Ctx() { em }: MyContext
   ): Promise<Post | null> {
     const post = em.create(Post, {
-      createdAt: new Date(),
       title: title,
+      createdAt: new Date(),
       updatedAt: new Date()
     });
     await em.persistAndFlush(post);
