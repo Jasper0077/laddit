@@ -3,7 +3,6 @@ import { __prod__, __postgreURL__ } from "./constants"
 import { Post } from "./entities/Post"
 import path from 'path'
 import { User } from "./entities/User"
-import { TsMorphMetadataProvider } from "@mikro-orm/reflection"
 
 export default {
   migrations: {
@@ -20,6 +19,5 @@ export default {
   password: process.env.MIKRO_ORM_PASSWORD,
   allowGlobalContext: true,
   debug: !__prod__,
-  metadataProvider: TsMorphMetadataProvider
     
 } as Parameters<typeof MikroORM.init>[0]
