@@ -3,6 +3,13 @@ import { Resolver, Arg, Mutation, InputType, Field, Ctx, ObjectType } from "type
 import argon2 from "argon2";
 import { User } from "../entities/User";
 
+// declaration merging for adding own properties to expresss-session
+declare module 'express-session' {
+  export interface SessionData {
+    userId: number;
+  }
+}
+
 @InputType()
 class UsernamePasswordInput {
   @Field()
@@ -75,6 +82,7 @@ export class UserResolver {
     try {
       await em.persistAndFlush(user);
     } catch (err) {
+
       // duplicate username error
       if (err.code == "23505")
         return {
@@ -95,7 +103,7 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   async login(
     @Arg('options') options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse | null> {
     const user = await em.findOne(User, { username: options.username }) // Username is unique
     if (!user) {
@@ -118,6 +126,9 @@ export class UserResolver {
         ]
       };
     }
+
+    req.session.userId = user._id;
+    console.log(req.session.userId);
 
     return {
       user: user,

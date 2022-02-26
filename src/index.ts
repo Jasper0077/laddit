@@ -10,6 +10,18 @@ import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import { UserResolver } from "./resolvers/user";
 
+import session from 'express-session';
+import connectRedis from 'connect-redis';
+import { MyContext } from "./types";
+import Redis from "ioredis";
+
+// const { createClient } = require("redis");
+const RedisStore = connectRedis(session)
+const redisClient = new Redis({
+  host: "127.0.0.1",
+  port: 6379
+});
+
 const main = async () => {
   const orm = await MikroORM.init(mikroORM);
   const migrator = orm.getMigrator();
@@ -25,12 +37,31 @@ const main = async () => {
 
   const app = express();
 
+  app.use(
+    session({
+      name: "qid",
+      store: new RedisStore({
+        client: redisClient, 
+        disableTouch: true,
+      }),
+      cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
+        httpOnly: true,
+        sameSite: "lax",
+        secure: __prod__
+      },
+      saveUninitialized: false,
+      secret: "somerandomstring123456",
+      resave: false,
+    })
+  )
+
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false
     }),
-    context: () => ({ em: orm.em })
+    context: ({ req, res }): MyContext => ({ em: orm.em, req, res })
   });
 
   await apolloServer.start();
