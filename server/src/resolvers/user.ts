@@ -1,5 +1,5 @@
 import { MyContext } from "src/types";
-import { Resolver, Arg, Mutation, InputType, Field, Ctx, ObjectType } from "type-graphql";
+import { Resolver, Arg, Mutation, InputType, Field, Ctx, ObjectType, Query } from "type-graphql";
 import argon2 from "argon2";
 import { User } from "../entities/User";
 
@@ -38,10 +38,23 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+
+  @Query(() => UserResponse)
+  async me(
+    @Ctx() { em, req }: MyContext
+  ) {
+    if (!req.session.userId) {
+      return null
+    }
+
+    const user = em.findOne(User, { _id: req.session.userId });
+    return user
+  }
+
   @Mutation(() => UserResponse)
   async register(
     @Arg('options') options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
 
     // username validation
@@ -95,6 +108,7 @@ export class UserResolver {
         }
     }
 
+    req.session.userId = user._id;
     return {
       user: user,
     }
