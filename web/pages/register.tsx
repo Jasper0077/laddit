@@ -32,7 +32,7 @@ const Register: React.FC<registerProps> = ({ }) => {
         initialValues={{ username: "", password: "" }}
         onSubmit={(values) => {
           console.log(values);
-          register(values);
+          return register(values);
         }}
       >
         {({ isSubmitting }) => 
@@ -43,9 +43,9 @@ const Register: React.FC<registerProps> = ({ }) => {
               label='Username'
               placeholder='username'
             />
-            <Box mt={4}>
+            {/* <Box mt={4}>
               <InputField name="email" placeholder="email" label="Email" />
-            </Box>
+            </Box> */}
             <Box mt={4}>
               <InputField
                 name="password"

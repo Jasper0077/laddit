@@ -15,6 +15,7 @@ import connectRedis from 'connect-redis';
 import { MyContext } from "./types";
 import Redis from "ioredis";
 
+import cors from "cors";
 import { createServer } from "http";
 
 // const { createClient } = require("redis");
@@ -42,6 +43,10 @@ const main = async () => {
   app.set("trust proxy", true);
 
   app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: true
+    }),
     session({
       name: "qid",
       store: new RedisStore({
@@ -71,7 +76,7 @@ const main = async () => {
 
   const corsOptions = {
     credentials: true,
-    origin: "https://studio.apollographql.com"
+    origin: "http://localhost:3000"
   }
   await apolloServer.start();
   apolloServer.applyMiddleware({ app, cors: corsOptions });
