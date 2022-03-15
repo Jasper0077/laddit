@@ -2,6 +2,7 @@ import { MyContext } from "src/types";
 import { Resolver, Arg, Mutation, InputType, Field, Ctx, ObjectType, Query } from "type-graphql";
 import argon2 from "argon2";
 import { User } from "../entities/User";
+import { EntityManager } from "@mikro-orm/postgresql";
 
 // declaration merging for adding own properties to expresss-session
 declare module 'express-session' {
@@ -84,18 +85,30 @@ export class UserResolver {
     const hashedPassword = await argon2.hash(options.password);
 
     // create user
-    const user = em.create(User, {
-      username: options.username,
-      password: hashedPassword,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
+    // const user = em.create(User, {
+    //   username: options.username,
+    //   password: hashedPassword,
+    //   createdAt: new Date(),
+    //   updatedAt: new Date()
+    // });
 
     // check duplicate username
+    let user;
     try {
-      await em.persistAndFlush(user);
+      const result = await (em as EntityManager)
+        .createQueryBuilder(User)
+        .getKnexQuery()
+        .insert({
+          username: options.username,
+          password: hashedPassword,
+          created_at: new Date(),
+          updated_at: new Date()
+        })
+        .returning("*");
+      user = result[0]
+      // await em.persistAndFlush(user);
     } catch (err) {
-
+      console.log(err);
       // duplicate username error
       if (err.code == "23505")
         return {

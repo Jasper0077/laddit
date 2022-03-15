@@ -5,13 +5,14 @@ import { Wrapper } from "../components/Wrapper";
 import { InputField } from '../components/InputField';
 import { useRegisterMutation } from '../generated/graphql';
 import { toErrorMap } from '../utils/toErrorMap';
-
+import { useRouter } from "next/router";
 interface registerProps {
 
 }
 
 const Register: React.FC<registerProps> = ({ }) => {
-  const [,register] = useRegisterMutation();
+  const router = useRouter();
+  const [, register] = useRegisterMutation();
   return (
     <Wrapper variant="small">
       <Formik
@@ -21,6 +22,9 @@ const Register: React.FC<registerProps> = ({ }) => {
           if (response.data?.register.errors) {
             [{field: 'username', message: 'something wrong'}]
             setErrors(toErrorMap(response.data.register.errors));
+          } else if (response.data?.register.user) {
+            //worked
+            router.push("/");
           }
         }}
       >
