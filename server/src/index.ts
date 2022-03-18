@@ -45,6 +45,7 @@ const main = async () => {
   app.use(
     cors({
       origin: "http://localhost:3000",
+      // origin: "https://studio.apollographql.com",
       credentials: true
     }),
     session({
@@ -55,6 +56,7 @@ const main = async () => {
       }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
+        // maxAge: 10,
         httpOnly: true,
         sameSite: "none",
         // secure: __prod__
@@ -76,7 +78,8 @@ const main = async () => {
 
   const corsOptions = {
     credentials: true,
-    origin: "http://localhost:3000"
+    origin: "http://localhost:3000",
+    // origin: "https://studio.apollographql.com"
   }
   await apolloServer.start();
   apolloServer.applyMiddleware({ app, cors: corsOptions });

@@ -40,16 +40,26 @@ class UserResponse {
 @Resolver()
 export class UserResolver {
 
-  @Query(() => UserResponse)
-  async me(
-    @Ctx() { em, req }: MyContext
-  ) {
+  // @Query(() => UserResponse)
+  // async me(
+  //   @Ctx() { em, req }: MyContext
+  // ) {
+  //   if (!req.session.userId) {
+  //     return null
+  //   }
+
+  //   const user = em.findOne(User, { _id: req.session.userId });
+  //   return user
+  // }
+
+  @Query(() => User, { nullable: true })
+  me(@Ctx() { em, req }: MyContext) {
+    // you are not logged in
     if (!req.session.userId) {
-      return null
+      return null;
     }
 
-    const user = em.findOne(User, { _id: req.session.userId });
-    return user
+    return em.findOne(User, { _id: req.session.userId });
   }
 
   @Mutation(() => UserResponse)
@@ -155,7 +165,7 @@ export class UserResolver {
     }
 
     req.session.userId = user._id;
-    console.log(req.session.userId);
+    console.log(req.session);
 
     return {
       user: user,
