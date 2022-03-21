@@ -3,6 +3,7 @@ import { Resolver, Arg, Mutation, InputType, Field, Ctx, ObjectType, Query } fro
 import argon2 from "argon2";
 import { User } from "../entities/User";
 import { EntityManager } from "@mikro-orm/postgresql";
+import { __cookieName__ } from "../constants";
 
 // declaration merging for adding own properties to expresss-session
 declare module 'express-session' {
@@ -171,4 +172,21 @@ export class UserResolver {
       user: user,
     };
   } 
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() {req, res}: MyContext) {
+    return new Promise(resolve =>
+      req.session.destroy(err => {
+        res.clearCookie(__cookieName__);
+        if (err) {
+          console.error(err);
+          resolve(false);
+          return
+          
+        } else {
+          resolve(true);
+        }
+      }
+    ))
+  }
 }

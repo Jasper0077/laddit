@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { MikroORM } from "@mikro-orm/core";
-import { __prod__ } from "./constants";
+import { __cookieName__, __prod__ } from "./constants";
 // import { Post } from "./entities/Post";
 import mikroORM from "./mikro-orm.config";
 import express from 'express';
@@ -56,7 +56,7 @@ const main = async () => {
       credentials: true
     }),
     session({
-      name: "qid",
+      name: __cookieName__,
       store: new RedisStore({
         client: redisClient, 
         disableTouch: true,
