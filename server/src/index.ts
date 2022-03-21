@@ -13,17 +13,18 @@ import { UserResolver } from "./resolvers/user";
 import session from 'express-session';
 import connectRedis from 'connect-redis';
 import { MyContext } from "./types";
-import Redis from "ioredis";
+// import Redis from "ioredis";
 
 import cors from "cors";
 import { createServer } from "http";
 
 // const { createClient } = require("redis");
 const RedisStore = connectRedis(session)
-const redisClient = new Redis({
-  host: "127.0.0.1",
-  port: 6379
-});
+// const redisClient = new Redis({
+//   host: "127.0.0.1",
+//   port: 6379
+// });
+const { createClient } = require("redis");
 
 const main = async () => {
   const orm = await MikroORM.init(mikroORM);
@@ -41,6 +42,12 @@ const main = async () => {
   const app = express();
 
   app.set("trust proxy", true);
+  let redisClient = createClient({ legacyMode: true });
+  redisClient.on("connect", () => console.log("Connected to Redis!"));
+  redisClient.on("error", (err: Error) =>
+    console.log("Redis Client Error", err)
+  );
+  redisClient.connect();
 
   app.use(
     cors({
@@ -58,9 +65,9 @@ const main = async () => {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
         // maxAge: 10,
         httpOnly: true,
-        sameSite: "none",
+        sameSite: "lax", // "lax" for localhost:3000, "none" for studio.apollographql
         // secure: __prod__
-        secure: true
+        secure: false // http -> false, https -> true
       },
       saveUninitialized: false,
       secret: "somerandomstring123456",
