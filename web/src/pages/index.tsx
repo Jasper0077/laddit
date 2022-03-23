@@ -1,16 +1,19 @@
 import type { NextPage } from 'next'
-import { withUrqlClient } from 'next-urql'
 import React from 'react'
 import { Navbar } from '../components/Navbar'
-import { createUrqlClient } from '../utils/createUrqlClient'
+import { usePostsQuery } from '../generated/graphql'
 
 const Home: NextPage = () => {
+  const [{data}] = usePostsQuery();
+
   return (
     <React.Fragment>
       <Navbar />
       <div>Hello world!</div>
+      <br />
+      {!data ? null : data.posts.map((post) => <div key={post._id}>{ post.title }</div>)}
     </React.Fragment>
   )
 }
 
-export default withUrqlClient(createUrqlClient)(Home)
+export default Home
