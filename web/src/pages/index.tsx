@@ -1,6 +1,8 @@
 import type { NextPage } from 'next'
+import { withUrqlClient } from 'next-urql'
 import React from 'react'
 import { Navbar } from '../components/Navbar'
+import { createUrqlClient } from '../utils/createUrqlClient'
 
 const Home: NextPage = () => {
   return (
@@ -11,4 +13,4 @@ const Home: NextPage = () => {
   )
 }
 
-export default Home
+export default withUrqlClient(createUrqlClient)(Home)
