@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { MikroORM } from "@mikro-orm/core";
-import { __cookieName__, __prod__ } from "./constants";
+import { isLocalhost, __cookieName__, __prod__ } from "./constants";
 // import { Post } from "./entities/Post";
 import mikroORM from "./mikro-orm.config";
 import express from 'express';
@@ -51,8 +51,7 @@ const main = async () => {
 
   app.use(
     cors({
-      origin: "http://localhost:3000",
-      // origin: "https://studio.apollographql.com",
+      origin: isLocalhost? "http://localhost:3000" : "https://studio.apollographql.com",
       credentials: true
     }),
     session({
@@ -65,9 +64,9 @@ const main = async () => {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
         // maxAge: 10,
         httpOnly: true,
-        sameSite: "lax", // "lax" for localhost:3000, "none" for studio.apollographql
+        sameSite: isLocalhost? "lax" : "none",
         // secure: __prod__
-        secure: false // http -> false, https -> true
+        secure: isLocalhost? false : true // http -> false, https -> true
       },
       saveUninitialized: false,
       secret: "somerandomstring123456",
@@ -85,8 +84,7 @@ const main = async () => {
 
   const corsOptions = {
     credentials: true,
-    origin: "http://localhost:3000",
-    // origin: "https://studio.apollographql.com"
+    origin: isLocalhost? "http://localhost:3000" : "https://studio.apollographql.com"
   }
   await apolloServer.start();
   apolloServer.applyMiddleware({ app, cors: corsOptions });

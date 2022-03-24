@@ -5,6 +5,8 @@ import { User } from "../entities/User";
 import { EntityManager } from "@mikro-orm/postgresql";
 import { __cookieName__ } from "../constants";
 
+import validator from "validator";
+
 // declaration merging for adding own properties to expresss-session
 declare module 'express-session' {
   export interface SessionData {
@@ -14,6 +16,8 @@ declare module 'express-session' {
 
 @InputType()
 class UsernamePasswordInput {
+  @Field()
+  email: string
   @Field()
   username: string
   @Field()
@@ -69,20 +73,32 @@ export class UserResolver {
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
 
+    // email validation
+    if (!validator.isEmail(options.email)) {
+      return {
+        errors: [
+          {
+            field: "email",
+            message: "email is invalid",
+          }
+        ]
+      }
+    }
+
     // username validation
-    if (options.username.length <= 2) {
+    if (!validator.isLength(options.username, {min: 2})) {
       return {
         errors: [
           {
             field: "username",
-            message: "length must be greater than 1",
+            message: "length must be greater than 2",
           }
         ]
       }
     }
 
     // password validation
-    if (options.password.length < 3) {
+    if (!validator.isLength(options.password, {min: 3})) {
       return {
         errors: [
           {
@@ -111,6 +127,7 @@ export class UserResolver {
         .getKnexQuery()
         .insert({
           username: options.username,
+          email: options.email,
           password: hashedPassword,
           created_at: new Date(),
           updated_at: new Date()
