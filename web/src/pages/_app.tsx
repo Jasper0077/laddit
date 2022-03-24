@@ -13,4 +13,4 @@ function MyApp({ Component, pageProps }: AppProps) {
   )
 }
 
-export default withUrqlClient(createUrqlClient)(MyApp)
+export default withUrqlClient(createUrqlClient, { ssr: true })(MyApp)

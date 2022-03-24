@@ -27,6 +27,7 @@
     "express-session": "^1.17.2",
     "graphql": "^15.3.0",
     "ioredis": "^4.28.5",
+    "nodemailer": "^6.7.3",
     "pg": "^8.7.3",
     "redis": "^4.0.4",
     "reflect-metadata": "^0.1.13",
