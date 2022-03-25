@@ -13,18 +13,16 @@ import { UserResolver } from "./resolvers/user";
 import session from 'express-session';
 import connectRedis from 'connect-redis';
 import { MyContext } from "./types";
-// import Redis from "ioredis";
+import Redis from "ioredis";
 
 import cors from "cors";
 import { createServer } from "http";
 
-// const { createClient } = require("redis");
 const RedisStore = connectRedis(session)
-// const redisClient = new Redis({
-//   host: "127.0.0.1",
-//   port: 6379
-// });
-const { createClient } = require("redis");
+const redis = new Redis({
+  host: "127.0.0.1",
+  port: 6379
+});
 
 const main = async () => {
   const orm = await MikroORM.init(mikroORM);
@@ -42,12 +40,6 @@ const main = async () => {
   const app = express();
 
   app.set("trust proxy", true);
-  let redisClient = createClient({ legacyMode: true });
-  redisClient.on("connect", () => console.log("Connected to Redis!"));
-  redisClient.on("error", (err: Error) =>
-    console.log("Redis Client Error", err)
-  );
-  redisClient.connect();
 
   app.use(
     cors({
@@ -57,7 +49,7 @@ const main = async () => {
     session({
       name: __cookieName__,
       store: new RedisStore({
-        client: redisClient, 
+        client: redis, 
         disableTouch: true,
       }),
       cookie: {
@@ -79,7 +71,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false
     }),
-    context: ({ req, res }): MyContext => ({ em: orm.em, req, res })
+    context: ({ req, res }): MyContext => ({ em: orm.em, req, res, redis })
   });
 
   const corsOptions = {

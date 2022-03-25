@@ -3,10 +3,12 @@ import { Resolver, Arg, Mutation, Field, Ctx, ObjectType, Query } from "type-gra
 import argon2 from "argon2";
 import { User } from "../entities/User";
 import { EntityManager } from "@mikro-orm/postgresql";
-import { __cookieName__ } from "../constants";
+import { FORGET_PASSWORD_PREFIX, __cookieName__ } from "../constants";
 
 import { UsernamePasswordInput } from "./UsernamePasswordInput";
 import { validateRegister } from "../utils/validateRegister";
+import { sendEmail } from "../utils/sendEmail";
+import { v4 } from "uuid";
 
 // declaration merging for adding own properties to expresss-session
 declare module 'express-session' {
@@ -35,18 +37,80 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+  
+  @Mutation(() => UserResponse)
+  async changePassword(
+    @Arg("token") token: string,
+    @Arg("newPassword") newPassword: string,
+    @Ctx() {req, em, redis}: MyContext
+  ): Promise<UserResponse> {
+    if (newPassword.length <= 2) {
+      return {
+        errors: [
+          {
+            field: "newPassword",
+            message: "length must be greater than 2"
+          }
+        ]
+      }
+    }
 
-  // @Query(() => UserResponse)
-  // async me(
-  //   @Ctx() { em, req }: MyContext
-  // ) {
-  //   if (!req.session.userId) {
-  //     return null
-  //   }
+    const userId = await redis.get(FORGET_PASSWORD_PREFIX + token)
+    if (!userId) {
+      return {
+        errors: [
+          {
+            field: "token",
+            message: "token doesn't exist or expired"
+          }
+        ]
+      }      
+    }
 
-  //   const user = em.findOne(User, { _id: req.session.userId });
-  //   return user
-  // }
+    const user = await em.findOne(User, { _id: parseInt(userId) })
+    if (!user) {
+      return {
+        errors: [
+          {
+            field: "user",
+            message: "user no longer exists"
+          }
+        ]
+      }
+    }
+
+    user.password = await argon2.hash(newPassword);
+    await em.persistAndFlush(user);
+
+    await redis.del(FORGET_PASSWORD_PREFIX + token);
+    // login in user
+    req.session.userId = user._id;
+    return {
+      user: user
+    }
+  }
+
+  @Mutation(() => Boolean)
+  async forgetPassword(@Arg("email") email: string, @Ctx() { em, redis }: MyContext) {
+    const user = await em.findOne(User, { email });
+    if (!user) {
+      // user dodesn't exist
+      return true
+    }
+    const token = v4(); //qwewe-qwewew-123
+    await redis.set(
+      FORGET_PASSWORD_PREFIX + token,
+      user._id,
+      'ex',
+      1000 * 60 * 60 * 24 * 3
+    )
+    
+    await sendEmail(
+      email,
+      `<a href="http://localhost:3000/change-password/${token}">reset password</a>`
+    )
+    return true
+  }
 
   @Query(() => User, { nullable: true })
   me(@Ctx() { em, req }: MyContext) {
