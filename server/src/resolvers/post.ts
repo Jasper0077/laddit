@@ -1,5 +1,5 @@
 import { Post } from "../entities/Post";
-import { Resolver, Query, ObjectType, Ctx, Arg, Int, Mutation } from "type-graphql";
+import { Resolver, Query, ObjectType, Ctx, Arg, Mutation } from "type-graphql";
 import { MyContext } from "src/types";
 import 'reflect-metadata';
 
@@ -8,16 +8,16 @@ import 'reflect-metadata';
 export class PostResolver {
   @Query(() => [Post])
   async posts(@Ctx() { em }: MyContext): Promise<Post[]> {
-    return em.find(Post, {});
+    return await em.find(Post);
   }
 
-  @Mutation(() => Post, {  nullable: true  })
-  post(
-    @Arg("id", () => Int) id: number,
+  @Query(() => Post, {  nullable: true  })
+  async post(
+    @Arg("id") id: number,
     @Ctx() { em }: MyContext
   ): Promise<Post | null> {
-    return em.findOne(Post, { _id: id });
-  }
+    return await em.findOne(Post, { where: { id: id } });
+  } 
 
   @Mutation(() => Post, {  nullable: true  })
   async createPost(
@@ -25,11 +25,10 @@ export class PostResolver {
     @Ctx() { em }: MyContext
   ): Promise<Post | null> {
     const post = em.create(Post, {
-      title: title,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-    await em.persistAndFlush(post);
+      title: title
+    })
+    
+    await em.save(post);
     return post;
   }
 
@@ -40,10 +39,10 @@ export class PostResolver {
     @Ctx() { em }: MyContext
   ): Promise<Post | null> {
     try {
-      const post = await em.findOneOrFail(Post, { _id: id });
+      const post = await em.findOneOrFail(Post, { where: { id: id } });
       if (typeof title !== undefined) {
         post.title = title;
-        await em.persistAndFlush(post);
+        await em.save(post);
       }
       return post;
     } catch (e) {
@@ -58,7 +57,7 @@ export class PostResolver {
     @Ctx() { em }: MyContext
   ): Promise<boolean> {
     try {
-      await em.nativeDelete(Post, { _id: id });
+      await em.delete(Post, { _id: id });
       return true;
     } catch (e) {
       console.log(e);

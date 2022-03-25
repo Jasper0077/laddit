@@ -1,8 +1,6 @@
 import "reflect-metadata";
-import { MikroORM } from "@mikro-orm/core";
 import { isLocalhost, __cookieName__, __prod__ } from "./constants";
 // import { Post } from "./entities/Post";
-import mikroORM from "./mikro-orm.config";
 import express from 'express';
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
@@ -17,6 +15,9 @@ import Redis from "ioredis";
 
 import cors from "cors";
 import { createServer } from "http";
+import { DataSource } from "typeorm";
+import { Post } from "./entities/Post";
+import { User } from "./entities/User";
 
 const RedisStore = connectRedis(session)
 const redis = new Redis({
@@ -25,15 +26,31 @@ const redis = new Redis({
 });
 
 const main = async () => {
-  const orm = await MikroORM.init(mikroORM);
-  const migrator = orm.getMigrator();
+  const AppDataSource = new DataSource({
+    type: "postgres",
+    host: "localhost",
+    port: 5432,
+    username: "postgres",
+    password: "123456",
+    database: "laddit",
+    logging: true,
+    synchronize: true,
+    entities: [Post, User]
+  })
+  AppDataSource.initialize()
+    .then(() => {
+        console.log("Data Source has been initialized!")
+    })
+    .catch((err) => {
+        console.error("Error during Data Source initialization", err)
+    })
   // const post = orm.em.create(Post, {
   //   createdAt: new Date(),
   //   title: "my first post",
   //   updatedAt: new Date()
   // });
 
-  await migrator.up();
+  // await migrator.up();
   // await orm.em.persistAndFlush(post);
   // await orm.close(true);
 
@@ -71,7 +88,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false
     }),
-    context: ({ req, res }): MyContext => ({ em: orm.em, req, res, redis })
+    context: ({ req, res }): MyContext => ({ em: AppDataSource.manager, req, res, redis })
   });
 
   const corsOptions = {

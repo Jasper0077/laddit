@@ -2,7 +2,6 @@ import { MyContext } from "src/types";
 import { Resolver, Arg, Mutation, Field, Ctx, ObjectType, Query } from "type-graphql";
 import argon2 from "argon2";
 import { User } from "../entities/User";
-import { EntityManager } from "@mikro-orm/postgresql";
 import { FORGET_PASSWORD_PREFIX, __cookieName__ } from "../constants";
 
 import { UsernamePasswordInput } from "./UsernamePasswordInput";
@@ -67,7 +66,7 @@ export class UserResolver {
       }      
     }
 
-    const user = await em.findOne(User, { _id: parseInt(userId) })
+    const user = await em.findOneBy(User, { id: parseInt(userId) })
     if (!user) {
       return {
         errors: [
@@ -80,11 +79,11 @@ export class UserResolver {
     }
 
     user.password = await argon2.hash(newPassword);
-    await em.persistAndFlush(user);
+    await em.save(user);
 
     await redis.del(FORGET_PASSWORD_PREFIX + token);
     // login in user
-    req.session.userId = user._id;
+    req.session.userId = user.id;
     return {
       user: user
     }
@@ -92,7 +91,7 @@ export class UserResolver {
 
   @Mutation(() => Boolean)
   async forgetPassword(@Arg("email") email: string, @Ctx() { em, redis }: MyContext) {
-    const user = await em.findOne(User, { email });
+    const user = await em.findOneBy(User, { email: email });
     if (!user) {
       // user dodesn't exist
       return true
@@ -100,7 +99,7 @@ export class UserResolver {
     const token = v4(); //qwewe-qwewew-123
     await redis.set(
       FORGET_PASSWORD_PREFIX + token,
-      user._id,
+      user.id,
       'ex',
       1000 * 60 * 60 * 24 * 3
     )
@@ -119,7 +118,7 @@ export class UserResolver {
       return null;
     }
 
-    return em.findOne(User, { _id: req.session.userId });
+    return em.findOneBy(User, { id: req.session.userId });
   }
 
   @Mutation(() => UserResponse)
@@ -147,19 +146,18 @@ export class UserResolver {
     // check duplicate username
     let user;
     try {
-      const result = await (em as EntityManager)
-        .createQueryBuilder(User)
-        .getKnexQuery()
-        .insert({
+      const result = await em
+        .createQueryBuilder()
+        .insert()
+        .into(User)
+        .values({
           username: options.username,
           email: options.email,
           password: hashedPassword,
-          created_at: new Date(),
-          updated_at: new Date()
         })
-        .returning("*");
-      user = result[0]
-      // await em.persistAndFlush(user);
+        .returning("*")
+        .execute();
+      user = result.raw[0];
     } catch (err) {
       console.log(err);
       // duplicate username error
@@ -174,7 +172,7 @@ export class UserResolver {
         }
     }
 
-    req.session.userId = user._id;
+    req.session.userId = user.id;
     return {
       user: user,
     }
@@ -186,7 +184,7 @@ export class UserResolver {
     @Arg('password') password: string,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse | null> {
-    const user = await em.findOne(User,
+    const user = await em.findOneBy(User,
       usernameOrEmail.includes("@") ?
         { email: usernameOrEmail }
         : { username: usernameOrEmail }
@@ -212,7 +210,7 @@ export class UserResolver {
       };
     }
 
-    req.session.userId = user._id;
+    req.session.userId = user.id;
     console.log(req.session);
 
     return {

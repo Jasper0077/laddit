@@ -11,7 +11,7 @@ const Home: NextPage = () => {
       <Navbar />
       <div>Hello world!</div>
       <br />
-      {!data ? <div>Loading...</div> : data.posts.map((post) => <div key={post._id}>{ post.title }</div>)}
+      {!data ? <div>Loading...</div> : data.posts.map((post) => <div key={post.id}>{ post.title }</div>)}
     </React.Fragment>
   )
 }
