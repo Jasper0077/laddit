@@ -1,7 +1,17 @@
 import { Post } from "../entities/Post";
-import { Resolver, Query, ObjectType, Ctx, Arg, Mutation } from "type-graphql";
+import { Resolver, Query, ObjectType, Ctx, Arg, Mutation, InputType, Field, UseMiddleware } from "type-graphql";
 import { MyContext } from "src/types";
 import 'reflect-metadata';
+import { isAuth } from "src/middlewares/isAuth";
+
+@InputType()
+class PostInput {
+  @Field()
+  title: string
+
+  @Field()
+  text: string
+}
 
 @ObjectType()
 @Resolver()
@@ -19,13 +29,16 @@ export class PostResolver {
     return await em.findOne(Post, { where: { id: id } });
   } 
 
-  @Mutation(() => Post, {  nullable: true  })
+  @Mutation(() => Post, { nullable: true })
+  @UseMiddleware(isAuth)
   async createPost(
-    @Arg("title") title: string,
-    @Ctx() { em }: MyContext
+    @Arg("input") input: PostInput,
+    @Ctx() { req, em }: MyContext
   ): Promise<Post | null> {
     const post = em.create(Post, {
-      title: title
+      title: input.title,
+      text: input.text,
+      creatorId: req.session.userId
     })
     
     await em.save(post);
