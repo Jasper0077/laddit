@@ -7,7 +7,7 @@ import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import { UserResolver } from "./resolvers/user";
-
+import path from "path";
 import session from 'express-session';
 import connectRedis from 'connect-redis';
 import { MyContext } from "./types";
@@ -15,7 +15,7 @@ import Redis from "ioredis";
 
 import cors from "cors";
 import { createServer } from "http";
-import { DataSource } from "typeorm";
+import { createConnection } from "typeorm";
 import { Post } from "./entities/Post";
 import { User } from "./entities/User";
 
@@ -25,8 +25,9 @@ const redis = new Redis({
   port: 6379
 });
 
+// rerun
 const main = async () => {
-  const AppDataSource = new DataSource({
+  const conn = await createConnection({
     type: "postgres",
     host: "localhost",
     port: 5432,
@@ -35,24 +36,11 @@ const main = async () => {
     database: "laddit",
     logging: true,
     synchronize: true,
+    migrations: [path.join(__dirname, "./migrations/*")],
     entities: [Post, User]
   })
-  AppDataSource.initialize()
-    .then(async () => {
-      console.log("Data Source has been initialized!")
-    })
-    .catch((err) => {
-        console.error("Error during Data Source initialization", err)
-    })
-  // const post = orm.em.create(Post, {
-  //   createdAt: new Date(),
-  //   title: "my first post",
-  //   updatedAt: new Date()
-  // });
 
-  // await migrator.up();
-  // await orm.em.persistAndFlush(post);
-  // await orm.close(true);
+  await conn.runMigrations();
 
   const app = express();
 
@@ -88,7 +76,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false
     }),
-    context: ({ req, res }): MyContext => ({ em: AppDataSource.manager, req, res, redis })
+    context: ({ req, res }): MyContext => ({ em: conn.manager, req, res, redis })
   });
 
   const corsOptions = {

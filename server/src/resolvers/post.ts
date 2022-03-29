@@ -1,5 +1,5 @@
 import { Post } from "../entities/Post";
-import { Resolver, Query, ObjectType, Ctx, Arg, Mutation, InputType, Field, UseMiddleware } from "type-graphql";
+import { Resolver, Query, ObjectType, Ctx, Arg, Mutation, InputType, Field, UseMiddleware, Int } from "type-graphql";
 import { MyContext } from "src/types";
 import 'reflect-metadata';
 import { isAuth } from "../middlewares/isAuth";
@@ -17,15 +17,27 @@ class PostInput {
 @Resolver()
 export class PostResolver {
   @Query(() => [Post])
-  async posts(@Ctx() { em }: MyContext): Promise<Post[]> {
-    return await em.find(Post);
+  async posts(
+    @Ctx() { em }: MyContext,
+    @Arg('limit', () => Int) limit: number = 50,
+    @Arg('cursor', () => String, { nullable: true}) cursor: string | null
+  ): Promise<Post[]> {
+    const realLimit = Math.min(50, limit);
+      const qb = em.createQueryBuilder(Post, "post")
+        .orderBy('"created_at"', "DESC")
+        .take(realLimit)
+    if (cursor) {
+      qb.where('"created_at" < :cursor',
+        { cursor: new Date(parseInt(cursor)) });
+    }
+    return qb.getMany()
   }
 
   @Query(() => Post, {  nullable: true  })
   async post(
     @Arg("id") id: number,
     @Ctx() { em }: MyContext
-  ): Promise<Post | null> {
+  ): Promise<Post | undefined> {
     return await em.findOne(Post, { where: { id: id } });
   } 
 

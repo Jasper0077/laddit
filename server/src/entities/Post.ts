@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from "type-graphql";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "./User";
 
 @ObjectType()
@@ -8,6 +8,12 @@ export class Post {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
   id!: number;
+
+  @CreateDateColumn({name: 'created_at'})
+  createdAt: Date;
+
+  @UpdateDateColumn({name: 'updated_at'})
+  updatedAt: Date;
 
   @Field()
   @Column({ default: "" })

@@ -66,7 +66,7 @@ export class UserResolver {
       }      
     }
 
-    const user = await em.findOneBy(User, { id: parseInt(userId) })
+    const user = await em.findOne(User, { where: { id: parseInt(userId) } })
     if (!user) {
       return {
         errors: [
@@ -91,7 +91,7 @@ export class UserResolver {
 
   @Mutation(() => Boolean)
   async forgetPassword(@Arg("email") email: string, @Ctx() { em, redis }: MyContext) {
-    const user = await em.findOneBy(User, { email: email });
+    const user = await em.findOne(User, { where: { email: email } });
     if (!user) {
       // user dodesn't exist
       return true
@@ -118,7 +118,7 @@ export class UserResolver {
       return null;
     }
 
-    return em.findOneBy(User, { id: req.session.userId });
+    return em.findOne(User, { where: { id: req.session.userId } });
   }
 
   @Mutation(() => UserResponse)
@@ -184,10 +184,10 @@ export class UserResolver {
     @Arg('password') password: string,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse | null> {
-    const user = await em.findOneBy(User,
+    const user = await em.findOne(User,
       usernameOrEmail.includes("@") ?
-        { email: usernameOrEmail }
-        : { username: usernameOrEmail }
+        { where: { email: usernameOrEmail }}
+        : { where: { username: usernameOrEmail }}
     ) // Username is unique
     if (!user) {
       return {

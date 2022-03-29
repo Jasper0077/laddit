@@ -3,8 +3,13 @@ import React from 'react'
 import { Navbar } from '../components/Navbar'
 import { usePostsQuery } from '../generated/graphql'
 
+// rerun
 const Home: NextPage = () => {
-  const [{data}] = usePostsQuery();
+  const [{ data }] = usePostsQuery({
+    variables: {
+      limit: 10
+    }
+  })
 
   return (
     <React.Fragment>
