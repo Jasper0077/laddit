@@ -40,7 +40,7 @@ const main = async () => {
     entities: [Post, User]
   })
 
-  await conn.runMigrations();
+  // await conn.runMigrations();
 
   const app = express();
 

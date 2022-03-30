@@ -1,3 +1,4 @@
+import { Box, Heading, Stack, Text } from '@chakra-ui/react'
 import type { NextPage } from 'next'
 import React from 'react'
 import { Navbar } from '../components/Navbar'
@@ -16,7 +17,17 @@ const Home: NextPage = () => {
       <Navbar />
       <div>Hello world!</div>
       <br />
-      {!data ? <div>Loading...</div> : data.posts.map((post) => <div key={post.id}>{ post.title }</div>)}
+      {!data ?
+        (<div>Loading...</div>) : (
+          <Stack spacing={8}>
+            {data.posts.map((post) =>
+              <Box p={5} shadow='md' borderWidth='1px'>
+                <Heading fontSize='xl'>{post.title}</Heading>
+                <Text mt={4}>{post.text}</Text>
+              </Box>
+            )}
+          </Stack>
+          )}
     </React.Fragment>
   )
 }
