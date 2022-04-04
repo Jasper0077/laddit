@@ -3,6 +3,6 @@ query Posts($limit: Int!, $cursor: String){
     id
     creatorId
     title
-    text
+    textSnippet
   }
 }
