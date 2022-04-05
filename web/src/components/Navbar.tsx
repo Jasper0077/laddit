@@ -18,7 +18,7 @@ export const Navbar: React.FC<NavbarProps> = ({ }) => {
   if (fetching) {
     // user not logged in
   } else if (!data?.me) {
-    console.log(data)
+    // console.log(data)
     body = (
       <>
         <NextLink href="/login">

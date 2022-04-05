@@ -77,6 +77,7 @@ export type Post = {
   id: Scalars['Int'];
   points: Scalars['Float'];
   text: Scalars['String'];
+  textSnippet: Scalars['String'];
   title: Scalars['String'];
 };
 
@@ -182,7 +183,7 @@ export type PostsQueryVariables = Exact<{
 }>;
 
 
-export type PostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: number, creatorId: number, title: string, text: string }> };
+export type PostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: number, creatorId: number, title: string, textSnippet: string }> };
 
 export const RegularErrorFragmentDoc = gql`
     fragment RegularError on FieldError {
@@ -290,7 +291,7 @@ export const PostsDocument = gql`
     id
     creatorId
     title
-    text
+    textSnippet
   }
 }
     `;
