@@ -1,16 +1,15 @@
 import { Box, Button, Flex, Heading, Link, Stack, Text } from '@chakra-ui/react'
 import NextLink from 'next/link'
 import type { NextPage } from 'next'
-import React from 'react'
+import React, { useState } from 'react'
 import { Layout } from '../components/Layout'
 import { usePostsQuery } from '../generated/graphql'
 
 // rerun
 const Home: NextPage = () => {
+  const [variables, setVariables] = useState({ limit: 10, cursor: null as null | string});
   const [{ data, fetching }] = usePostsQuery({
-    variables: {
-      limit: 10
-    }
+    variables,
   })
 
   if (!data && !fetching) {
@@ -29,7 +28,7 @@ const Home: NextPage = () => {
       {fetching && !data ?
         (<div>Loading...</div>) : (
           <Stack spacing={8}>
-            {data!.posts.map((post) =>
+            {data!.posts.posts.map((post) =>
               <Box p={5} shadow='md' borderWidth='1px'>
                 <Heading fontSize='xl'>{post.title}</Heading>
                 <Text mt={4}>{post.textSnippet}</Text>
@@ -38,9 +37,14 @@ const Home: NextPage = () => {
           </Stack>
         )
       }
-      {data ? (
+      {data && data.posts.hasMore ? (
         <Flex align="center">
-          <Button isLoading={fetching} m="auto" my={8}>
+          <Button onClick={() => {
+            setVariables({
+              limit: variables.limit,
+              cursor: data.posts.posts[data.posts.posts.length - 1].created_at.toString(),
+            })
+          }} isLoading={fetching} m="auto" my={8}>
             Load more..
           </Button>
         </Flex>

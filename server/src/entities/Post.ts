@@ -9,11 +9,13 @@ export class Post {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @CreateDateColumn({name: 'created_at'})
-  createdAt: Date;
+  @Field()
+  @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+  public created_at: Date;
 
-  @UpdateDateColumn({name: 'updated_at'})
-  updatedAt: Date;
+  @Field()
+  @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+  public updated_at: Date;
 
   @Field()
   @Column({ default: "" })

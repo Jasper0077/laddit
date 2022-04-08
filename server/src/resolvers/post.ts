@@ -14,6 +14,14 @@ class PostInput {
 }
 
 @ObjectType()
+class PaginatedPosts {
+  @Field(() => [Post])
+  posts: Post[];
+  @Field()
+  hasMore: boolean;
+}
+
+@ObjectType()
 @Resolver(Post)
 export class PostResolver {
   @FieldResolver(() => String)
@@ -24,21 +32,24 @@ export class PostResolver {
   }
 
 
-  @Query(() => [Post])
+  @Query(() => PaginatedPosts)
   async posts(
     @Ctx() { em }: MyContext,
     @Arg('limit', () => Int) limit: number = 50,
     @Arg('cursor', () => String, { nullable: true}) cursor: string | null
-  ): Promise<Post[]> {
+  ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit);
+    const realLimitPlusOne = realLimit + 1;
       const qb = em.createQueryBuilder(Post, "post")
         .orderBy('"created_at"', "DESC")
-        .take(realLimit)
+        .take(realLimitPlusOne)
     if (cursor) {
       qb.where('"created_at" < :cursor',
         { cursor: new Date(parseInt(cursor)) });
     }
-    return qb.getMany()
+
+    const posts = await qb.getMany();
+    return { posts: posts.slice(0, realLimit), hasMore: posts.length === realLimitPlusOne }
   }
 
   @Query(() => Post, {  nullable: true  })
