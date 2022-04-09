@@ -40,7 +40,8 @@ export class PostResolver {
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
-      const qb = em.createQueryBuilder(Post, "post")
+    const qb = em.createQueryBuilder(Post, "post")
+        .innerJoinAndSelect("post.creator", "u", 'u.id = post."creatorId"')
         .orderBy('"created_at"', "DESC")
         .take(realLimitPlusOne)
     if (cursor) {

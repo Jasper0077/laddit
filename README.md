@@ -30,6 +30,8 @@ git clone https://github.com/Jasper0077/laddit.git
 
 This section show the two ways to work with the project dependecies. 
 
+The mock data can be generated using [Mockaroo](https://mockaroo.com).
+
 ### NPM
 
 If you are using `npm`, you can install the dependecies with
