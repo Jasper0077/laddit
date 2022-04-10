@@ -3,6 +3,7 @@ import { Resolver, Query, ObjectType, Ctx, Arg, Mutation, InputType, Field, UseM
 import { MyContext } from "src/types";
 import 'reflect-metadata';
 import { isAuth } from "../middlewares/isAuth";
+import { getConnection } from "typeorm";
 
 @InputType()
 class PostInput {
@@ -31,7 +32,6 @@ export class PostResolver {
     return root.text.slice(0, 50);
   }
 
-
   @Query(() => PaginatedPosts)
   async posts(
     @Ctx() { em }: MyContext,
@@ -40,16 +40,38 @@ export class PostResolver {
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
-    const qb = em.createQueryBuilder(Post, "post")
-        .innerJoinAndSelect("post.creator", "u", 'u.id = post."creatorId"')
-        .orderBy('"created_at"', "DESC")
-        .take(realLimitPlusOne)
-    if (cursor) {
-      qb.where('"created_at" < :cursor',
-        { cursor: new Date(parseInt(cursor)) });
-    }
+    const replacements: any[] = [realLimitPlusOne];
 
-    const posts = await qb.getMany();
+    // Use raw query instead, query builder is broken with combined property.
+    if (cursor) {
+      replacements.push(new Date(parseInt(cursor)))
+    }
+    const posts = await getConnection().query(
+      `
+    select p.*,
+    json_build_object(
+      'id', u.id,
+      'username', u.username,
+      'email', u.email
+    ) creator
+    from post p
+    inner join public.user u on u.id = p."creatorId"
+    ${cursor ? `where p."created_at" < $2` : ""}
+    order by p."created_at" DESC
+    limit $1
+    `,
+      replacements
+    );
+    // const qb = em.createQueryBuilder(Post, "post")
+    //     .innerJoinAndSelect("post.creator", "u", 'u.id = post."creatorId"')
+    //     .orderBy('post."created_at"', "DESC")
+    //     .take(realLimitPlusOne)
+    // if (cursor) {
+    //   qb.where('post."created_at" < :cursor',
+    //     { cursor: new Date(parseInt(cursor)) });
+    // }
+
+    // const posts = await qb.getMany();
     return { posts: posts.slice(0, realLimit), hasMore: posts.length === realLimitPlusOne }
   }
 
