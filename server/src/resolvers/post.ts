@@ -66,16 +66,17 @@ export class PostResolver {
   @Query(() => PaginatedPosts)
   async posts(
     // @Ctx() { em }: MyContext,
-    @Arg('limit', () => Int) limit: number = 50,
+    @Arg('limit', () => Int) limit: number,
     @Arg('cursor', () => String, { nullable: true}) cursor: string | null
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
     const replacements: any[] = [realLimitPlusOne];
-
+    console.log("cursor: ", cursor);
+    console.log("limit: ", limit);
     // Use raw query instead, query builder is broken with combined property.
     if (cursor) {
-      replacements.push(new Date(parseInt(cursor)))
+      replacements.push(new Date(cursor))
     }
     const posts = await getConnection().query(
       `
@@ -93,6 +94,16 @@ export class PostResolver {
     `,
       replacements
     );
+    // const posts = await getConnection().query(
+    //     `
+    //   select *
+    //   from post
+    //   ${cursor ? `where created_at < $2` : ""}
+    //   order by created_at DESC
+    //   limit $1
+    //   `,
+    //     replacements
+    // );
     // const qb = em.createQueryBuilder(Post, "post")
     //     .innerJoinAndSelect("post.creator", "u", 'u.id = post."creatorId"')
     //     .orderBy('post."created_at"', "DESC")
@@ -103,6 +114,7 @@ export class PostResolver {
     // }
 
     // const posts = await qb.getMany();
+    console.log("posts: ", posts);
     return { posts: posts.slice(0, realLimit), hasMore: posts.length === realLimitPlusOne }
   }
 

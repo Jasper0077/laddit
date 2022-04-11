@@ -7,7 +7,7 @@ import { usePostsQuery } from '../generated/graphql'
 
 // rerun
 const Home: NextPage = () => {
-  const [variables, setVariables] = useState({ limit: 10, cursor: null as null | string});
+  const [variables, setVariables] = useState({ limit: 15, cursor: null as null | string});
   const [{ data, fetching }] = usePostsQuery({
     variables,
   })
@@ -31,6 +31,7 @@ const Home: NextPage = () => {
             {data!.posts.posts.map((post) =>
               <Box p={5} shadow='md' borderWidth='1px'>
                 <Heading fontSize='xl'>{post.title}</Heading>
+                <Text>posted by { post.creator.username}</Text>
                 <Text mt={4}>{post.textSnippet}</Text>
               </Box>
             )}
@@ -42,7 +43,7 @@ const Home: NextPage = () => {
           <Button onClick={() => {
             setVariables({
               limit: variables.limit,
-              cursor: data.posts.posts[data.posts.posts.length - 1].created_at.toString(),
+              cursor: data.posts.posts[data.posts.posts.length - 1].created_at,
             })
           }} isLoading={fetching} m="auto" my={8}>
             Load more..
