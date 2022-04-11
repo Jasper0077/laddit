@@ -30,6 +30,7 @@ export class Post {
   @Column()
   creatorId: number;
 
+  @Field()
   @ManyToOne(() => User, user => user.posts)
   creator: User;
 

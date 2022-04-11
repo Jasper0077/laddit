@@ -1,4 +1,5 @@
 import { Post } from "../entities/Post";
+import { Updoot } from "../entities/Updoot";
 import { Resolver, Query, ObjectType, Ctx, Arg, Mutation, InputType, Field, UseMiddleware, Int, FieldResolver, Root } from "type-graphql";
 import { MyContext } from "src/types";
 import 'reflect-metadata';
@@ -32,9 +33,39 @@ export class PostResolver {
     return root.text.slice(0, 50);
   }
 
+  @Mutation(() => Boolean)
+  async vote(
+    @Arg('postId', () => Int) postId: number,
+    @Arg('value', () => Int) value: number,
+    @Ctx() { req }: MyContext
+  ) {
+    const { userId } = req.session;
+    const isUpdoot = value !== -1;
+    const voteValue = isUpdoot ? 1 : -1
+    await Updoot.insert({
+      userId,
+      postId,
+      value: voteValue
+    })
+    getConnection().query(
+      `
+        START TRANSACTION;
+
+        insert into updoot ("userId", "postId", value)
+        values (${userId},${postId},${value});
+
+        update post
+        set points = points + ${voteValue}
+        where id = ${postId};
+
+        COMMIT;
+      `)
+    return true;
+  }
+
   @Query(() => PaginatedPosts)
   async posts(
-    @Ctx() { em }: MyContext,
+    // @Ctx() { em }: MyContext,
     @Arg('limit', () => Int) limit: number = 50,
     @Arg('cursor', () => String, { nullable: true}) cursor: string | null
   ): Promise<PaginatedPosts> {
