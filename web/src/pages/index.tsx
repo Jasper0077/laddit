@@ -4,6 +4,7 @@ import type { NextPage } from 'next'
 import React, { useState } from 'react'
 import { Layout } from '../components/Layout'
 import { usePostsQuery } from '../generated/graphql'
+import { UpdootSection } from '../components/UpdootSection'
 
 // rerun
 const Home: NextPage = () => {
@@ -29,11 +30,14 @@ const Home: NextPage = () => {
         (<div>Loading...</div>) : (
           <Stack spacing={8}>
             {data!.posts.posts.map((post) =>
-              <Box p={5} shadow='md' borderWidth='1px'>
-                <Heading fontSize='xl'>{post.title}</Heading>
-                <Text>posted by { post.creator.username}</Text>
-                <Text mt={4}>{post.textSnippet}</Text>
-              </Box>
+              <Flex key={post.id} p={5} shadow="md" borderWidth="1px">
+                <UpdootSection post={post} />
+                <Box p={5} shadow='md' borderWidth='1px'>
+                  <Heading fontSize='xl'>{post.title}</Heading>
+                  <Text>posted by { post.creator.username}</Text>
+                  <Text mt={4}>{post.textSnippet}</Text>
+                </Box>
+              </Flex>
             )}
           </Stack>
         )
