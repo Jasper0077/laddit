@@ -32,7 +32,7 @@ const Home: NextPage = () => {
             {data!.posts.posts.map((post) =>
               <Flex key={post.id} p={5} shadow="md" borderWidth="1px">
                 <UpdootSection post={post} />
-                <Box p={5} shadow='md' borderWidth='1px'>
+                <Box p={5}>
                   <Heading fontSize='xl'>{post.title}</Heading>
                   <Text>posted by { post.creator.username}</Text>
                   <Text mt={4}>{post.textSnippet}</Text>
