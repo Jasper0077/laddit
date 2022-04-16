@@ -79,11 +79,12 @@ export class PostResolver {
   async posts(
     // @Ctx() { em }: MyContext,
     @Arg('limit', () => Int) limit: number,
-    @Arg('cursor', () => String, { nullable: true}) cursor: string | null
+    @Arg('cursor', () => String, { nullable: true }) cursor: string | null,
+    @Ctx() { req }: MyContext
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
-    const replacements: any[] = [realLimitPlusOne];
+    const replacements: any[] = [realLimitPlusOne, req.session.userId];
     console.log("cursor: ", cursor);
     console.log("limit: ", limit);
     // Use raw query instead, query builder is broken with combined property.
@@ -98,9 +99,13 @@ export class PostResolver {
       'username', u.username,
       'email', u.email
     ) creator
+    ${req.session.userId
+      ? '(select value from updoot where "userId" = $2 and "postId" = p.id) "voteStatus"'
+      : 'null as "voteStatus"'
+    }
     from post p
     inner join public.user u on u.id = p."creatorId"
-    ${cursor ? `where p."created_at" < $2` : ""}
+    ${cursor ? `where p."created_at" < $3` : ""}
     order by p."created_at" DESC
     limit $1
     `,
