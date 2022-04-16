@@ -49,7 +49,7 @@ const main = async () => {
 
   app.use(
     cors({
-      origin: isLocalhost? "http://localhost:3000" : "https://studio.apollographql.com",
+      origin: isLocalhost ? "http://localhost:3000" : "https://studio.apollographql.com",
       credentials: true
     }),
     session({
@@ -64,7 +64,7 @@ const main = async () => {
         httpOnly: true,
         sameSite: isLocalhost? "lax" : "none",
         // secure: __prod__
-        secure: isLocalhost? false : true // http -> false, https -> true
+        secure: isLocalhost ? false : true // http -> false, https -> true
       },
       saveUninitialized: false,
       secret: "somerandomstring123456",

@@ -77,35 +77,44 @@ export class PostResolver {
 
   @Query(() => PaginatedPosts)
   async posts(
-    // @Ctx() { em }: MyContext,
     @Arg('limit', () => Int) limit: number,
     @Arg('cursor', () => String, { nullable: true }) cursor: string | null,
     @Ctx() { req }: MyContext
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
-    const replacements: any[] = [realLimitPlusOne, req.session.userId];
-    console.log("cursor: ", cursor);
-    console.log("limit: ", limit);
+    const replacements: any[] = [realLimitPlusOne];
+
+    // if user is logged in
+    if (req.session.userId) {
+      replacements.push(req.session.userId);
+    }
+
     // Use raw query instead, query builder is broken with combined property.
+    let cursorIdx = 3;
     if (cursor) {
       replacements.push(new Date(cursor))
+      cursorIdx = replacements.length;
     }
+    console.log("cursor: ", cursor);
+    console.log("userId: ", req.session.userId);
     const posts = await getConnection().query(
       `
     select p.*,
     json_build_object(
       'id', u.id,
       'username', u.username,
-      'email', u.email
-    ) creator
+      'email', u.email,
+      'created_at', u."created_at",
+      'updated_at', u."updated_at"
+    ) creator,
     ${req.session.userId
-      ? '(select value from updoot where "userId" = $2 and "postId" = p.id) "voteStatus"'
-      : 'null as "voteStatus"'
+      ? `(select value from updoot where "userId" = $2 and "postId" = p.id) as "voteStatus"`
+      : `null as "voteStatus"`
     }
     from post p
     inner join public.user u on u.id = p."creatorId"
-    ${cursor ? `where p."created_at" < $3` : ""}
+    ${cursor ? `where p."created_at" < $${ cursorIdx }` : ""}
     order by p."created_at" DESC
     limit $1
     `,

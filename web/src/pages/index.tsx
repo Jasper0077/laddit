@@ -13,7 +13,7 @@ const Home: NextPage = () => {
     variables,
   })
 
-  if (!data && !fetching) {
+  if (!fetching && !data) {
     return <div>You got failed query for some reason.</div>
   }
 
@@ -26,7 +26,7 @@ const Home: NextPage = () => {
         </NextLink>
       </Flex>
       <br />
-      {fetching && !data ?
+      {!data && fetching ?
         (<div>Loading...</div>) : (
           <Stack spacing={8}>
             {data!.posts.posts.map((post) =>
