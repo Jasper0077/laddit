@@ -1,10 +1,11 @@
-import { Box, Button, Flex, Heading, Link, Stack, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Heading, IconButton, Link, Stack, Text } from '@chakra-ui/react'
 import NextLink from 'next/link'
 import type { NextPage } from 'next'
 import React, { useState } from 'react'
 import { Layout } from '../components/Layout'
-import { usePostsQuery } from '../generated/graphql'
+import { useDeletePostMutation, usePostsQuery } from '../generated/graphql'
 import { UpdootSection } from '../components/UpdootSection'
+import { DeleteIcon } from '@chakra-ui/icons'
 
 // rerun
 const Home: NextPage = () => {
@@ -12,6 +13,8 @@ const Home: NextPage = () => {
   const [{ data, fetching }] = usePostsQuery({
     variables,
   })
+
+  const [, deletePost] = useDeletePostMutation();
 
   if (!fetching && !data) {
     return <div>You got failed query for some reason.</div>
@@ -23,18 +26,26 @@ const Home: NextPage = () => {
         (<div>Loading...</div>) : (
           <Stack spacing={8}>
             {data!.posts.posts.map((post) =>
-              <Flex key={post.id} p={5} shadow="md" borderWidth="1px">
+              !post ? null : (<Flex key={post.id} p={5} shadow="md" borderWidth="1px">
                 <UpdootSection post={post} />
-                <Box p={5}>
+                <Box p={5} flex={1}>
                   <NextLink href="/post/[id]" as={`/post/${post.id}`}>
                     <Link>
                       <Heading fontSize='xl'>{post.title}</Heading>
                     </Link>
                   </NextLink>
                   <Text>posted by { post.creator.username}</Text>
-                  <Text mt={4}>{post.textSnippet}</Text>
+                  <Flex align="center">
+                    <Text flex={1} mt={4}>{post.textSnippet}</Text>
+                    <IconButton
+                      onClick={() => deletePost({id: post.id})}
+                      icon={<DeleteIcon />}
+                      boxSize={8}
+                      aria-label="delete post"
+                    />
+                  </Flex>
                 </Box>
-              </Flex>
+              </Flex>)
             )}
           </Stack>
         )
