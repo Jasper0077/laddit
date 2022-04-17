@@ -19,13 +19,6 @@ const Home: NextPage = () => {
 
   return (
     <Layout variant='regular'>
-      <Flex align="center">
-        <Heading>Laddit</Heading>
-        <NextLink href="/create-post">
-          <Link ml="auto">Create post</Link>
-        </NextLink>
-      </Flex>
-      <br />
       {!data && fetching ?
         (<div>Loading...</div>) : (
           <Stack spacing={8}>
@@ -33,7 +26,11 @@ const Home: NextPage = () => {
               <Flex key={post.id} p={5} shadow="md" borderWidth="1px">
                 <UpdootSection post={post} />
                 <Box p={5}>
-                  <Heading fontSize='xl'>{post.title}</Heading>
+                  <NextLink href="/post/[id]" as={`/post/${post.id}`}>
+                    <Link>
+                      <Heading fontSize='xl'>{post.title}</Heading>
+                    </Link>
+                  </NextLink>
                   <Text>posted by { post.creator.username}</Text>
                   <Text mt={4}>{post.textSnippet}</Text>
                 </Box>
