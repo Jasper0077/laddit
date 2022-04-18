@@ -2,6 +2,7 @@ fragment PostSnippet on Post {
   id
   creatorId
   title
+  text
   textSnippet
   created_at
   points

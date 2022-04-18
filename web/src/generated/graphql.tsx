@@ -144,7 +144,7 @@ export type UsernamePasswordInput = {
   username: Scalars['String'];
 };
 
-export type PostSnippetFragment = { __typename?: 'Post', id: number, creatorId: number, title: string, textSnippet: string, created_at: any, points: number, voteStatus?: number | null, creator: { __typename?: 'User', id: number, username: string } };
+export type PostSnippetFragment = { __typename?: 'Post', id: number, creatorId: number, title: string, text: string, textSnippet: string, created_at: any, points: number, voteStatus?: number | null, creator: { __typename?: 'User', id: number, username: string } };
 
 export type RegularErrorFragment = { __typename?: 'FieldError', field: string, message: string };
 
@@ -228,7 +228,7 @@ export type PostQueryVariables = Exact<{
 }>;
 
 
-export type PostQuery = { __typename?: 'Query', post?: { __typename?: 'Post', id: number, creatorId: number, title: string, textSnippet: string, created_at: any, points: number, voteStatus?: number | null, creator: { __typename?: 'User', id: number, username: string } } | null };
+export type PostQuery = { __typename?: 'Query', post?: { __typename?: 'Post', id: number, creatorId: number, title: string, text: string, textSnippet: string, created_at: any, points: number, voteStatus?: number | null, creator: { __typename?: 'User', id: number, username: string } } | null };
 
 export type PostsQueryVariables = Exact<{
   limit: Scalars['Int'];
@@ -236,13 +236,14 @@ export type PostsQueryVariables = Exact<{
 }>;
 
 
-export type PostsQuery = { __typename?: 'Query', posts: { __typename?: 'PaginatedPosts', hasMore: boolean, posts: Array<{ __typename?: 'Post', id: number, creatorId: number, title: string, textSnippet: string, created_at: any, points: number, voteStatus?: number | null, creator: { __typename?: 'User', id: number, username: string } }> } };
+export type PostsQuery = { __typename?: 'Query', posts: { __typename?: 'PaginatedPosts', hasMore: boolean, posts: Array<{ __typename?: 'Post', id: number, creatorId: number, title: string, text: string, textSnippet: string, created_at: any, points: number, voteStatus?: number | null, creator: { __typename?: 'User', id: number, username: string } }> } };
 
 export const PostSnippetFragmentDoc = gql`
     fragment PostSnippet on Post {
   id
   creatorId
   title
+  text
   textSnippet
   created_at
   points

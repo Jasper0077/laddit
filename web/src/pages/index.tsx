@@ -3,14 +3,13 @@ import NextLink from 'next/link'
 import type { NextPage } from 'next'
 import React, { useState } from 'react'
 import { Layout } from '../components/Layout'
-import { useMeQuery, usePostsQuery } from '../generated/graphql'
+import { usePostsQuery } from '../generated/graphql'
 import { UpdootSection } from '../components/UpdootSection'
 import { EditDeletePostButtons } from '../components/EditDeletePostButton'
 
 // rerun
 const Home: NextPage = () => {
   const [variables, setVariables] = useState({ limit: 15, cursor: null as null | string });
-  const [{ data: meData }] = useMeQuery();
   const [{ data, fetching }] = usePostsQuery({
     variables,
   })
@@ -36,7 +35,7 @@ const Home: NextPage = () => {
                   <Text>posted by { post.creator.username}</Text>
                   <Flex align="center">
                     <Text flex={1} mt={4}>{post.textSnippet}</Text>
-                    {meData?.me?.id !== post.creatorId ? null : <EditDeletePostButtons id={post.id} creatorId={ post.creatorId }/>}
+                    <EditDeletePostButtons id={post.id} creatorId={ post.creatorId }/>
                   </Flex>
                 </Box>
               </Flex>)

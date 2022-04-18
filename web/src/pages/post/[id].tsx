@@ -1,5 +1,6 @@
 import { Box, Heading } from "@chakra-ui/react";
 import { useRouter } from "next/router";
+import { EditDeletePostButtons } from "../../components/EditDeletePostButton";
 import { Layout } from "../../components/Layout";
 import { usePostQuery } from "../../generated/graphql";
 
@@ -34,7 +35,8 @@ const Post = ({ }) => {
   return (
     <Layout variant="regular">
       <Heading mb={4}>{data.post.title}</Heading>
-      {data.post.textSnippet}
+      <Box mb={4}>{data.post.textSnippet}</Box>
+      <EditDeletePostButtons id={data.post.id} creatorId={ data.post.creatorId }/>
     </Layout>
   );
 };

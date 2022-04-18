@@ -19,6 +19,8 @@ import { createConnection } from "typeorm";
 import { Post } from "./entities/Post";
 import { User } from "./entities/User";
 import { Updoot } from "./entities/Updoot";
+import { createUserLoader } from "./utils/createUserLoader";
+import { createUpdootLoader } from "./utils/createUpdootLoader";
 
 const RedisStore = connectRedis(session)
 const redis = new Redis({
@@ -77,7 +79,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false
     }),
-    context: ({ req, res }): MyContext => ({ em: conn.manager, req, res, redis })
+    context: ({ req, res }): MyContext => ({ em: conn.manager, req, res, redis, userLoader: createUserLoader(), updootLoader: createUpdootLoader() })
   });
 
   const corsOptions = {

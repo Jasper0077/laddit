@@ -1,5 +1,6 @@
 import { Post } from "../entities/Post";
 import { Updoot } from "../entities/Updoot";
+import { User } from "../entities/User";
 import { Resolver, Query, ObjectType, Ctx, Arg, Mutation, InputType, Field, UseMiddleware, Int, FieldResolver, Root } from "type-graphql";
 import { MyContext } from "src/types";
 import 'reflect-metadata';
@@ -31,6 +32,30 @@ export class PostResolver {
     @Root() root: Post
   ) {
     return root.text.slice(0, 50);
+  }
+
+  // @FieldResolver(() => User)
+  // creator(
+  //   @Root() post: Post
+  // ) {
+  //   return User.findOne(post.creatorId);
+  // }
+
+  @FieldResolver(() => User)
+  creator(@Root() post: Post, @Ctx() { userLoader }: MyContext) {
+    return userLoader.load(post.creatorId);
+  }
+
+  @FieldResolver(() => User)
+  async voteStatus(@Root() post: Post, @Ctx() { req, updootLoader }: MyContext) {
+    if (!req.session.userId) {
+      return null
+    }
+    const updoot = await updootLoader.load({
+      postId: post.id, userId: req.session.userId
+    });
+
+    return updoot ? updoot.value : null
   }
 
   @Mutation(() => Boolean)
@@ -79,42 +104,19 @@ export class PostResolver {
   async posts(
     @Arg('limit', () => Int) limit: number,
     @Arg('cursor', () => String, { nullable: true }) cursor: string | null,
-    @Ctx() { req }: MyContext
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
     const replacements: any[] = [realLimitPlusOne];
 
-    // if user is logged in
-    if (req.session.userId) {
-      replacements.push(req.session.userId);
-    }
-
-    // Use raw query instead, query builder is broken with combined property.
-    let cursorIdx = 3;
     if (cursor) {
       replacements.push(new Date(cursor))
-      cursorIdx = replacements.length;
     }
-    console.log("cursor: ", cursor);
-    console.log("userId: ", req.session.userId);
     const posts = await getConnection().query(
       `
-    select p.*,
-    json_build_object(
-      'id', u.id,
-      'username', u.username,
-      'email', u.email,
-      'created_at', u."created_at",
-      'updated_at', u."updated_at"
-    ) creator,
-    ${req.session.userId
-      ? `(select value from updoot where "userId" = $2 and "postId" = p.id) as "voteStatus"`
-      : `null as "voteStatus"`
-    }
+    select p.*
     from post p
-    inner join public.user u on u.id = p."creatorId"
-    ${cursor ? `where p."created_at" < $${ cursorIdx }` : ""}
+    ${cursor ? `where p."created_at" < $2` : ""}
     order by p."created_at" DESC
     limit $1
     `,
@@ -149,7 +151,7 @@ export class PostResolver {
     @Arg("id", () => Int) id: number,
     @Ctx() { em }: MyContext
   ): Promise<Post | undefined> {
-    return await em.findOne(Post, { where: { id: id }, relations: ["creator"] });
+    return await em.findOne(Post, { where: { id: id } });
   } 
 
   @Mutation(() => Post, { nullable: true })
