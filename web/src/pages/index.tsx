@@ -1,20 +1,19 @@
-import { Box, Button, Flex, Heading, IconButton, Link, Stack, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Heading, Link, Stack, Text } from '@chakra-ui/react'
 import NextLink from 'next/link'
 import type { NextPage } from 'next'
 import React, { useState } from 'react'
 import { Layout } from '../components/Layout'
-import { useDeletePostMutation, usePostsQuery } from '../generated/graphql'
+import { useMeQuery, usePostsQuery } from '../generated/graphql'
 import { UpdootSection } from '../components/UpdootSection'
-import { DeleteIcon } from '@chakra-ui/icons'
+import { EditDeletePostButtons } from '../components/EditDeletePostButton'
 
 // rerun
 const Home: NextPage = () => {
-  const [variables, setVariables] = useState({ limit: 15, cursor: null as null | string});
+  const [variables, setVariables] = useState({ limit: 15, cursor: null as null | string });
+  const [{ data: meData }] = useMeQuery();
   const [{ data, fetching }] = usePostsQuery({
     variables,
   })
-
-  const [, deletePost] = useDeletePostMutation();
 
   if (!fetching && !data) {
     return <div>You got failed query for some reason.</div>
@@ -37,12 +36,7 @@ const Home: NextPage = () => {
                   <Text>posted by { post.creator.username}</Text>
                   <Flex align="center">
                     <Text flex={1} mt={4}>{post.textSnippet}</Text>
-                    <IconButton
-                      onClick={() => deletePost({id: post.id})}
-                      icon={<DeleteIcon />}
-                      boxSize={8}
-                      aria-label="delete post"
-                    />
+                    {meData?.me?.id !== post.creatorId ? null : <EditDeletePostButtons id={post.id} creatorId={ post.creatorId }/>}
                   </Flex>
                 </Box>
               </Flex>)

@@ -168,23 +168,37 @@ export class PostResolver {
     return post;
   }
 
-  @Mutation(() => Post, {  nullable: true  })
+  @Mutation(() => Post, { nullable: true })
+  @UseMiddleware(isAuth)
   async updatePost(
-    @Arg("id") id: number,
+    @Arg("id", () => Int) id: number,
     @Arg("title") title: string,
-    @Ctx() { em }: MyContext
+    @Arg("text") text: string,
+    @Ctx() { req }: MyContext
   ): Promise<Post | null> {
-    try {
-      const post = await em.findOneOrFail(Post, { where: { id: id } });
-      if (typeof title !== undefined) {
-        post.title = title;
-        await em.save(post);
-      }
-      return post;
-    } catch (e) {
-      console.error('Not found', e);
-      return null;
-    }
+    // try {
+    //   const post = await em.findOneOrFail(Post, { where: { id: id } });
+    //   if (typeof title !== undefined) {
+    //     post.title = title;
+    //     post.text = text;
+    //     await em.save(post);
+    //   }
+    //   return post;
+    // } catch (e) {
+    //   console.error('Not found', e);
+    //   return null;
+    // }
+
+    // user has to be the creator
+    const result = await getConnection()
+      .createQueryBuilder()
+      .update(Post)
+      .set({ title, text })
+      .where('id = :id and creatorId = :creatorId', { id, creatorId: req.session.userId })
+      .returning("*")
+      .execute();
+    
+    return result.raw[0];
   }
 
   @Mutation(() => Boolean)
