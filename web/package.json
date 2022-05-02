@@ -16,6 +16,9 @@
     "@emotion/styled": "11",
     "@graphql-codegen/cli": "^2.6.2",
     "@graphql-codegen/typescript-urql": "^3.5.3",
+    "@tiptap/extension-underline": "^2.0.0-beta.23",
+    "@tiptap/react": "^2.0.0-beta.109",
+    "@tiptap/starter-kit": "^2.0.0-beta.184",
     "@urql/core": "^2.4.4",
     "@urql/exchange-graphcache": "^4.3.6",
     "formik": "^2.2.9",
@@ -25,6 +28,7 @@
     "next-urql": "^3.3.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",
+    "react-icons": "^4.3.1",
     "react-is": "^17.0.2",
     "urql": "^2.2.0"
   },
